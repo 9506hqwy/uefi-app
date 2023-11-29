@@ -36,7 +36,7 @@ jobs:
     - name: Create Archive
       working-directory: ./rust
       run: |
-        RUST_TARGET=`rustup show active-toolchain | sed -e 's/[^-]*-\(.*\)\s.*/\1/'`
+        RUST_TARGET=`rustup show active-toolchain | cut -d ' ' -f 1 | sed -e 's/[^-]*-\(.*\)/\1/'`
 
         CUR_DIR=$(pwd)
         mkdir -p "${CUR_DIR}/artifacts"
