@@ -1,0 +1,66 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+    tags-ignore: [ '**' ]
+    paths: [ 'rust/**' ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check Format
+      working-directory: ./rust
+      run: cargo fmt --all --check
+
+    - name: Check Lint
+      working-directory: ./rust
+      run: |
+        cargo clippy --fix
+        git diff --exit-code --quiet
+
+    - name: Create Artifacts
+      working-directory: ./rust
+      run: |
+        cargo build --release --workspace --all-features --verbose
+        cargo build --release --workspace --all-features --examples --verbose
+
+    - name: Create Archive
+      working-directory: ./rust
+      run: |
+        RUST_TARGET=`rustup show active-toolchain | sed -e 's/[^-]*-\(.*\)\s.*/\1/'`
+
+        CUR_DIR=$(pwd)
+        LIB_DIR='./target/x86_64-unknown-uefi/release'
+        pushd "$LIB_DIR"
+        FILES=$(find . -maxdepth 1 -type f -name '*.efi')
+        if [[ -n $FILES ]] ; then
+            tar -zcf "${CUR_DIR}/artifacts/${RUST_TARGET}.tar.gz" $FILES
+        fi
+        popd
+
+        EXAMPLE_DIR='./target/x86_64-unknown-uefi/release/examples/'
+        for EXAMPLE in $(find "$EXAMPLE_DIR" -type f -executable)
+        do
+            BASE_NAME=$(basename "${EXAMPLE}")
+            if [[ ! $BASE_NAME =~ -[a-fA-F0-9]{16}$ ]] ; then
+                tar -C "$EXAMPLE_DIR" -zcf "./artifacts/${BASE_NAME}-${RUST_TARGET}.tar.gz" "$BASE_NAME"
+            fi
+        done
+
+        echo "RUST_TARGET=${RUST_TARGET}" >> $GITHUB_ENV
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.RUST_TARGET }}
+        path: rust/artifacts/
+        retention-days: 1
