@@ -1,0 +1,21 @@
+[package]
+name = "count-down"
+keywords = ["uefi"]
+# https://crates.io/category_slugs
+categories = ["no-std"]
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "count-down"
+test = false
+bench = false
+
+[dependencies]
+uefi = "0.26.0"
+uefi-services = "0.23.0"
