@@ -3,14 +3,14 @@
 
 use core::fmt::Write;
 use core::str;
+use uefi::helpers::system_table as pointer;
 use uefi::prelude::*;
 use uefi::proto::loaded_image::LoadedImage;
 use uefi::proto::network::pxe::{BaseCode, DhcpV4Packet};
-use uefi_services::system_table as pointer;
 
 #[entry]
 fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi_services::init(&mut system_table).unwrap();
+    uefi::helpers::init(&mut system_table).unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/09_Protocols_EFI_Loaded_Image.html#protocols-efi-loaded-image
     let loaded_image = system_table
