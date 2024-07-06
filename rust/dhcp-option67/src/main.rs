@@ -3,10 +3,10 @@
 
 use core::fmt::Write;
 use core::str;
-use uefi::helpers::system_table as pointer;
 use uefi::prelude::*;
 use uefi::proto::loaded_image::LoadedImage;
 use uefi::proto::network::pxe::{BaseCode, DhcpV4Packet};
+use uefi::table::system_table_boot as pointer;
 
 #[entry]
 fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -36,8 +36,8 @@ fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let boot_file = str::from_utf8(boot_file_slice).unwrap();
 
     // Use pointer because of stdout() require mutable reference.
-    pointer().stdout().clear().unwrap();
-    pointer().stdout().write_str(boot_file).unwrap();
+    pointer().unwrap().stdout().clear().unwrap();
+    pointer().unwrap().stdout().write_str(boot_file).unwrap();
 
     system_table.boot_services().stall(20_000_000);
 
