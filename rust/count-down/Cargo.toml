@@ -17,5 +17,5 @@ test = false
 bench = false
 
 [dependencies]
-uefi = "0.29.0"
+uefi = "0.30.0"
 uefi-services = "0.25.0"
