@@ -9,8 +9,8 @@ use uefi::proto::network::pxe::{BaseCode, DhcpV4Packet};
 use uefi::table::system_table_boot as pointer;
 
 #[entry]
-fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut system_table).unwrap();
+fn main(image_handle: Handle, system_table: SystemTable<Boot>) -> Status {
+    uefi::helpers::init().unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/09_Protocols_EFI_Loaded_Image.html#protocols-efi-loaded-image
     let loaded_image = system_table

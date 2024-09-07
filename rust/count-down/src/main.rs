@@ -8,7 +8,7 @@ use uefi::table::runtime::ResetType;
 
 #[entry]
 fn main(image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut system_table).unwrap();
+    uefi::helpers::init().unwrap();
 
     system_table.stdout().clear().unwrap();
 
