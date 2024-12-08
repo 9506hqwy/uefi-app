@@ -4,7 +4,9 @@ on:
   push:
     branches: [ main ]
     tags-ignore: [ '**' ]
-    paths: [ 'edk2/**' ]
+    paths:
+    - '.github/workflows/edk2.yml'
+    - 'edk2/**'
 
 jobs:
   build:
@@ -30,25 +32,24 @@ jobs:
             uuid-dev
 
     - name: Download EDK2
-      run: git clone --recursive --depth 1 -b edk2-stable202411 https://github.com/tianocore/edk2.git /usr/src/edk2
+      run: git clone --recursive --depth 1 -b edk2-stable202411 https://github.com/tianocore/edk2.git ./sdk
 
     - name: Build EDK2
-      working-directory: /usr/src/edk2
+      working-directory: ./edk2/sdk
       run: make -C BaseTools
 
     - name: Setup packages
       run: |
-        pushd /usr/src/edk2
+        pushd ./sdk
 
         ln -s ${GITHUB_WORKSPACE}/CountDown MdeModulePkg/Application/CountDown
         sed MdeModulePkg/MdeModulePkg.dsc -i -e '/^\[Components\]/aMdeModulePkg/Application/CountDown/CountDown.inf/'
-
 
     - name: Create Artifacts
       run: |
         mkdir ./artifacts
 
-        pushd /usr/src/edk2
+        pushd ./sdk
         source edksetup.sh
 
         build \
