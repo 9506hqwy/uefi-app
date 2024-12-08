@@ -3,26 +3,21 @@
 
 use core::fmt::Write;
 use core::str;
+use uefi::boot;
 use uefi::prelude::*;
 use uefi::proto::loaded_image::LoadedImage;
 use uefi::proto::network::pxe::{BaseCode, DhcpV4Packet};
-use uefi::table::system_table_boot as pointer;
+use uefi::system;
 
 #[entry]
-fn main(image_handle: Handle, system_table: SystemTable<Boot>) -> Status {
+fn main() -> Status {
     uefi::helpers::init().unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/09_Protocols_EFI_Loaded_Image.html#protocols-efi-loaded-image
-    let loaded_image = system_table
-        .boot_services()
-        .open_protocol_exclusive::<LoadedImage>(image_handle)
-        .unwrap();
+    let loaded_image = boot::open_protocol_exclusive::<LoadedImage>(boot::image_handle()).unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/24_Network_Protocols_SNP_PXE_BIS.html#pxe-base-code-protocol
-    let pxe = system_table
-        .boot_services()
-        .open_protocol_exclusive::<BaseCode>(loaded_image.device().unwrap())
-        .unwrap();
+    let pxe = boot::open_protocol_exclusive::<BaseCode>(loaded_image.device().unwrap()).unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/24_Network_Protocols_SNP_PXE_BIS.html#dhcp-packet-data-types
     let ack: &DhcpV4Packet = pxe.mode().dhcp_ack.as_ref();
@@ -35,11 +30,10 @@ fn main(image_handle: Handle, system_table: SystemTable<Boot>) -> Status {
 
     let boot_file = str::from_utf8(boot_file_slice).unwrap();
 
-    // Use pointer because of stdout() require mutable reference.
-    pointer().unwrap().stdout().clear().unwrap();
-    pointer().unwrap().stdout().write_str(boot_file).unwrap();
+    system::with_stdout(|stdout| stdout.clear()).unwrap();
+    system::with_stdout(|stdout| stdout.write_str(boot_file)).unwrap();
 
-    system_table.boot_services().stall(20_000_000);
+    boot::stall(20_000_000);
 
     Status::SUCCESS
 }
