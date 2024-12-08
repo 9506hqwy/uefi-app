@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         sudo apt update
         sudo apt install -y \
@@ -38,18 +38,18 @@ jobs:
       working-directory: ./edk2/sdk
       run: make -C BaseTools
 
-    - name: Setup packages
+    - name: Setup Packages
+      working-directory: ./edk2/sdk
       run: |
-        pushd ./sdk
-
-        ln -s ${GITHUB_WORKSPACE}/CountDown MdeModulePkg/Application/CountDown
+        ln -s ${GITHUB_WORKSPACE}/edk2/CountDown MdeModulePkg/Application/CountDown
+        ls -l MdeModulePkg/Application/CountDown
         sed MdeModulePkg/MdeModulePkg.dsc -i -e '/^\[Components\]/aMdeModulePkg/Application/CountDown/CountDown.inf/'
 
     - name: Create Artifacts
+      working-directory: ./edk2/sdk
       run: |
-        mkdir ./artifacts
+        mkdir ${GITHUB_WORKSPACE}/edk2/artifacts
 
-        pushd ./sdk
         source edksetup.sh
 
         build \
@@ -58,7 +58,7 @@ jobs:
             --arch=X64 \
             --buildtarget=RELEASE \
             --tagname=GCC5
-        cp Build/MdeModule/RELEASE_GCC5/X64/CountDown.efi ${GITHUB_WORKSPACE}/artifacts/
+        cp Build/MdeModule/RELEASE_GCC5/X64/CountDown.efi ${GITHUB_WORKSPACE}/edk2/artifacts/
 
         EDK2_TARGET=$(git tag --points-at HEAD)
         echo "EDK2_TARGET=${EDK2_TARGET}" >> $GITHUB_ENV
