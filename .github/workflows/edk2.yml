@@ -1,0 +1,70 @@
+name: EDK2
+
+on:
+  push:
+    branches: [ main ]
+    tags-ignore: [ '**' ]
+    paths: [ 'edk2/**' ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./edk2
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+            build-essential \
+            git \
+            iasl \
+            nasm \
+            python-is-python3 \
+            uuid-dev
+
+    - name: Download EDK2
+      run: git clone --recursive --depth 1 -b edk2-stable202411 https://github.com/tianocore/edk2.git /usr/src/edk2
+
+    - name: Build EDK2
+      working-directory: /usr/src/edk2
+      run: make -C BaseTools
+
+    - name: Setup packages
+      run: |
+        pushd /usr/src/edk2
+
+        ln -s ${GITHUB_WORKSPACE}/CountDown MdeModulePkg/Application/CountDown
+        sed MdeModulePkg/MdeModulePkg.dsc -i -e '/^\[Components\]/aMdeModulePkg/Application/CountDown/CountDown.inf/'
+
+
+    - name: Create Artifacts
+      run: |
+        mkdir ./artifacts
+
+        pushd /usr/src/edk2
+        source edksetup.sh
+
+        build \
+            --platform=MdeModulePkg/MdeModulePkg.dsc \
+            --module=MdeModulePkg/Application/CountDown/CountDown.inf \
+            --arch=X64 \
+            --buildtarget=RELEASE \
+            --tagname=GCC5
+        cp Build/MdeModule/RELEASE_GCC5/X64/CountDown.efi ${GITHUB_WORKSPACE}/artifacts/
+
+        EDK2_TARGET=$(git tag --points-at HEAD)
+        echo "EDK2_TARGET=${EDK2_TARGET}" >> $GITHUB_ENV
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.EDK2_TARGET }}
+        path: edk2/artifacts/
+        retention-days: 1
