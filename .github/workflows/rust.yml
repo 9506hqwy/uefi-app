@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     tags-ignore: [ '**' ]
     paths: [ 'rust/**' ]
+  pull_request:
 
 env:
   CARGO_TERM_COLOR: always
@@ -57,6 +58,14 @@ jobs:
                 tar -C "$EXAMPLE_DIR" -zcf "./artifacts/${BASE_NAME}-${RUST_TARGET}.tar.gz" "$BASE_NAME"
             fi
         done
+
+        cargo doc --no-deps --workspace --all-features --verbose
+        pushd ./target/x86_64-unknown-uefi/doc
+            tar -zcf ${CUR_DIR}/artifacts/help-${RUST_TARGET}.tar.gz" -- *
+        popd
+
+        mkdir -p "${CUR_DIR}/artifacts/licenses"
+        ./tools/cargo-licenses.sh -o "${CUR_DIR}/artifacts/licenses"
 
         echo "RUST_TARGET=${RUST_TARGET}" >> $GITHUB_ENV
 
