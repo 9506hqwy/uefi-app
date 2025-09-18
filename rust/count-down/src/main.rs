@@ -17,14 +17,14 @@ fn main() -> Status {
     let sec = 5usize;
 
     system::with_stdout(|stdout| {
-        stdout.write_fmt(format_args!("shutdown after {} seconds.\n\n", sec))
+        stdout.write_fmt(format_args!("shutdown after {sec} seconds.\n\n"))
     })
     .unwrap();
 
     let (x, y) = system::with_stdout(|stdout| stdout.cursor_position());
 
     for i in (0..=sec).rev() {
-        system::with_stdout(|stdout| stdout.write_fmt(format_args!("{} second\n", i))).unwrap();
+        system::with_stdout(|stdout| stdout.write_fmt(format_args!("{i} second\n"))).unwrap();
 
         boot::stall(1_000_000);
         system::with_stdout(|stdout| stdout.set_cursor_position(x, y)).unwrap();

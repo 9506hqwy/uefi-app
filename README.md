@@ -21,7 +21,7 @@ firewall-cmd --reload
 
 Configure DHCP server.
 
-```
+```text
 # /etc/dhcp/dhcpd.conf
 
 option domain-name "home.local";
