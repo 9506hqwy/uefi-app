@@ -20,7 +20,7 @@ fn main() -> Status {
     let pxe = boot::open_protocol_exclusive::<BaseCode>(loaded_image.device().unwrap()).unwrap();
 
     // https://uefi.org/specs/UEFI/2.10/24_Network_Protocols_SNP_PXE_BIS.html#dhcp-packet-data-types
-    let ack: &DhcpV4Packet = pxe.mode().dhcp_ack.as_ref();
+    let ack: &DhcpV4Packet = pxe.mode().dhcp_ack().as_ref();
 
     // Remove trailing null character.
     let mut boot_file_slice = ack.bootp_boot_file.as_slice();
