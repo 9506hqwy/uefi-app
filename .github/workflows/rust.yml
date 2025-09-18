@@ -4,7 +4,9 @@ on:
   push:
     branches: [ main ]
     tags-ignore: [ '**' ]
-    paths: [ 'rust/**' ]
+    paths:
+    - '.github/workflows/rust.yml'
+    - 'rust/**'
   pull_request:
 
 env:
@@ -37,37 +39,38 @@ jobs:
     - name: Create Archive
       working-directory: ./rust
       run: |
-        RUST_TARGET=`rustup show active-toolchain | cut -d ' ' -f 1 | sed -e 's/[^-]*-\(.*\)/\1/'`
+        RUST_TARGET=$(rustup show active-toolchain | cut -d ' ' -f 1 | sed -e 's/[^-]*-\(.*\)/\1/')
 
         CUR_DIR=$(pwd)
         mkdir -p "${CUR_DIR}/artifacts"
 
         LIB_DIR='./target/x86_64-unknown-uefi/release'
-        pushd "$LIB_DIR"
-        FILES=$(find . -maxdepth 1 -type f -name '*.efi')
-        if [[ -n $FILES ]] ; then
-            tar -zcf "${CUR_DIR}/artifacts/${RUST_TARGET}.tar.gz" $FILES
+        pushd "${LIB_DIR}"
+        mapfile -t FILES < <(find . -maxdepth 1 -type f -name '*.efi')
+        if [[ -n "${FILES[0]}" ]] ; then
+            tar -zcf "${CUR_DIR}/artifacts/${RUST_TARGET}.tar.gz" "${FILES[@]}"
         fi
         popd
 
         EXAMPLE_DIR='./target/x86_64-unknown-uefi/release/examples/'
-        for EXAMPLE in $(find "$EXAMPLE_DIR" -type f -executable)
+        mapfile -t EXAMPLES < <(find "${EXAMPLE_DIR}" -type f -executable)
+        for EXAMPLE in "${EXAMPLES[@]}"
         do
-            BASE_NAME=$(basename "${EXAMPLE}")
+            BASE_NAME="$(basename "${EXAMPLE}")"
             if [[ ! $BASE_NAME =~ -[a-fA-F0-9]{16}$ ]] ; then
-                tar -C "$EXAMPLE_DIR" -zcf "./artifacts/${BASE_NAME}-${RUST_TARGET}.tar.gz" "$BASE_NAME"
+                tar -C "${EXAMPLE_DIR}" -zcf "./artifacts/${BASE_NAME}-${RUST_TARGET}.tar.gz" "${BASE_NAME}"
             fi
         done
 
         cargo doc --no-deps --workspace --all-features --verbose
         pushd ./target/x86_64-unknown-uefi/doc
-            tar -zcf ${CUR_DIR}/artifacts/help-${RUST_TARGET}.tar.gz" -- *
+            tar -zcf "${CUR_DIR}/artifacts/help-${RUST_TARGET}.tar.gz" -- *
         popd
 
         mkdir -p "${CUR_DIR}/artifacts/licenses"
         ./tools/cargo-licenses.sh -o "${CUR_DIR}/artifacts/licenses"
 
-        echo "RUST_TARGET=${RUST_TARGET}" >> $GITHUB_ENV
+        echo "RUST_TARGET=${RUST_TARGET}" >> "${GITHUB_ENV}"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
