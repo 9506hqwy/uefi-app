@@ -3,6 +3,7 @@
 
 use core::fmt::Write;
 use core::format_args;
+use core::time::Duration;
 use uefi::boot;
 use uefi::prelude::*;
 use uefi::runtime::{self, ResetType};
@@ -26,7 +27,7 @@ fn main() -> Status {
     for i in (0..=sec).rev() {
         system::with_stdout(|stdout| stdout.write_fmt(format_args!("{i} second\n"))).unwrap();
 
-        boot::stall(1_000_000);
+        boot::stall(Duration::new(1, 0));
         system::with_stdout(|stdout| stdout.set_cursor_position(x, y)).unwrap();
     }
 

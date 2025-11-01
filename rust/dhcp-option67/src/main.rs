@@ -3,6 +3,7 @@
 
 use core::fmt::Write;
 use core::str;
+use core::time::Duration;
 use uefi::boot;
 use uefi::prelude::*;
 use uefi::proto::loaded_image::LoadedImage;
@@ -33,7 +34,7 @@ fn main() -> Status {
     system::with_stdout(|stdout| stdout.clear()).unwrap();
     system::with_stdout(|stdout| stdout.write_str(boot_file)).unwrap();
 
-    boot::stall(20_000_000);
+    boot::stall(Duration::new(20, 0));
 
     Status::SUCCESS
 }

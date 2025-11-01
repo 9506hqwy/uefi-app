@@ -17,4 +17,4 @@ test = false
 bench = false
 
 [dependencies]
-uefi = { version = "0.35.0", features = ["panic_handler"] }
+uefi = { version = "0.36.0", features = ["panic_handler"] }
