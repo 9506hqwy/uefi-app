@@ -19,7 +19,7 @@ jobs:
         working-directory: ./edk2
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Install Dependencies
       run: |
