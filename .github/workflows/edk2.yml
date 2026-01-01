@@ -67,7 +67,7 @@ jobs:
         echo "EDK2_TARGET=${EDK2_TARGET}" >> $GITHUB_ENV
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ env.EDK2_TARGET }}
         path: edk2/artifacts/
